@@ -1,33 +1,30 @@
 export interface User {
-  id: number
-  username: string
-  email: string
-  firstName: string
-  lastName: string
-  roles: string[]
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roles: string[];
 }
 
 export interface LoginRequest {
-  username: string
-  password: string
+  email: string;
+  password: string;
 }
 
 export interface RegisterRequest {
-  username: string
-  email: string
-  password: string
-  firstName: string
-  lastName: string
-  roles?: string[]
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  roles?: string[];
 }
 
 export interface AuthResponse {
-  token: string
-  type: string
-  id: number
-  username: string
-  email: string
-  firstName: string
-  lastName: string
-  roles: string[]
+  token: string;
+  type: string;
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roles: string[];
 }

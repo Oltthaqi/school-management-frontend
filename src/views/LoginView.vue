@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div
+    class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8"
+  >
     <div class="max-w-md w-full space-y-8">
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -12,15 +14,15 @@
       <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
-            <label for="username" class="sr-only">Username</label>
+            <label for="email" class="sr-only">Email</label>
             <input
-              id="username"
-              v-model="form.username"
-              name="username"
+              id="email"
+              v-model="form.email"
+              name="email"
               type="text"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Username"
+              placeholder="email"
             />
           </div>
           <div>
@@ -53,7 +55,10 @@
         </div>
 
         <div class="text-center">
-          <router-link to="/register" class="text-indigo-600 hover:text-indigo-500">
+          <router-link
+            to="/register"
+            class="text-indigo-600 hover:text-indigo-500"
+          >
             Don't have an account? Register here
           </router-link>
         </div>
@@ -63,24 +68,24 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import { reactive } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
 const form = reactive({
-  username: '',
-  password: ''
-})
+  email: "",
+  password: "",
+});
 
 const handleLogin = async () => {
   try {
-    await authStore.login(form)
-    router.push('/dashboard')
+    await authStore.login(form);
+    router.push("/dashboard");
   } catch (error) {
     // Error is handled in the store
   }
-}
+};
 </script>
