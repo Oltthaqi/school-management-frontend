@@ -53,15 +53,6 @@
             <span v-else>Sign in</span>
           </button>
         </div>
-
-        <div class="text-center">
-          <router-link
-            to="/register"
-            class="text-indigo-600 hover:text-indigo-500"
-          >
-            Don't have an account? Register here
-          </router-link>
-        </div>
       </form>
     </div>
   </div>
