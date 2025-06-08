@@ -33,7 +33,10 @@
                 <td>{{ formatDate(student.admissionDate) }}</td>
                 <td>
                   <div class="flex space-x-2">
-                    <button @click="viewStudent(student)" class="text-blue-600 hover:text-blue-500">
+                    <button
+                      @click="viewStudent(student)"
+                      class="text-blue-600 hover:text-blue-500"
+                    >
                       View
                     </button>
                     <button
@@ -63,58 +66,90 @@
     <Modal v-if="showCreateModal || editingStudent" @close="closeModal">
       <div class="p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">
-          {{ editingStudent ? 'Edit Student' : 'Add New Student' }}
+          {{ editingStudent ? "Edit Student" : "Add New Student" }}
         </h3>
-        
+
         <form @submit.prevent="saveStudent" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="form-label">First Name</label>
-              <input v-model="form.firstName" type="text" required class="form-input" />
+              <input
+                v-model="form.firstName"
+                type="text"
+                required
+                class="form-input"
+              />
             </div>
             <div>
               <label class="form-label">Last Name</label>
-              <input v-model="form.lastName" type="text" required class="form-input" />
+              <input
+                v-model="form.lastName"
+                type="text"
+                required
+                class="form-input"
+              />
             </div>
           </div>
-          
+
           <div>
             <label class="form-label">Email</label>
-            <input v-model="form.email" type="email" required class="form-input" />
+            <input
+              v-model="form.email"
+              type="email"
+              required
+              class="form-input"
+            />
           </div>
-          
+
           <div>
             <label class="form-label">Student ID</label>
-            <input v-model="form.studentId" type="text" required class="form-input" />
+            <input
+              v-model="form.studentId"
+              type="text"
+              required
+              class="form-input"
+            />
           </div>
-          
+
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="form-label">Date of Birth</label>
-              <input v-model="form.dateOfBirth" type="date" class="form-input" />
+              <input
+                v-model="form.dateOfBirth"
+                type="date"
+                class="form-input"
+              />
             </div>
             <div>
               <label class="form-label">Admission Date</label>
-              <input v-model="form.admissionDate" type="date" class="form-input" />
+              <input
+                v-model="form.admissionDate"
+                type="date"
+                class="form-input"
+              />
             </div>
           </div>
-          
+
           <div>
             <label class="form-label">Phone Number</label>
             <input v-model="form.phoneNumber" type="tel" class="form-input" />
           </div>
-          
+
           <div>
             <label class="form-label">Address</label>
-            <textarea v-model="form.address" rows="3" class="form-input"></textarea>
+            <textarea
+              v-model="form.address"
+              rows="3"
+              class="form-input"
+            ></textarea>
           </div>
-          
+
           <div class="flex justify-end space-x-3 pt-4">
             <button type="button" @click="closeModal" class="btn-secondary">
               Cancel
             </button>
             <button type="submit" class="btn-primary">
-              {{ editingStudent ? 'Update' : 'Create' }}
+              {{ editingStudent ? "Update" : "Create" }}
             </button>
           </div>
         </form>
@@ -124,103 +159,106 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import AppLayout from '../components/layout/AppLayout.vue'
-import Modal from '../components/ui/Modal.vue'
-import { useAuthStore } from '../stores/auth'
-import { studentService } from '../services/studentService'
-import type { Student } from '../types'
+import { ref, reactive, onMounted } from "vue";
+import AppLayout from "../components/layout/AppLayout.vue";
+import Modal from "../components/ui/Modal.vue";
+import { useAuthStore } from "../stores/auth";
+import { studentService } from "../services/studentService";
+import type { Student } from "../types";
 
-const authStore = useAuthStore()
+const authStore = useAuthStore();
 
-const students = ref<Student[]>([])
-const showCreateModal = ref(false)
-const editingStudent = ref<Student | null>(null)
+const students = ref<Student[]>([]);
+const showCreateModal = ref(false);
+const editingStudent = ref<Student | null>(null);
 
 const form = reactive({
-  firstName: '',
-  lastName: '',
-  email: '',
-  studentId: '',
-  dateOfBirth: '',
-  admissionDate: '',
-  phoneNumber: '',
-  address: ''
-})
+  firstName: "",
+  lastName: "",
+  email: "",
+  studentId: "",
+  dateOfBirth: "",
+  admissionDate: "",
+  phoneNumber: "",
+  address: "",
+});
 
 const loadStudents = async () => {
   try {
-    students.value = await studentService.getAll()
+    students.value = await studentService.getAll();
   } catch (error) {
-    console.error('Failed to load students:', error)
+    console.error("Failed to load students:", error);
   }
-}
+};
 
 const viewStudent = (student: Student) => {
-  // Implementation for viewing student details
-  console.log('View student:', student)
-}
+  try {
+    studentService.getById(student.id);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const editStudent = (student: Student) => {
-  editingStudent.value = student
+  editingStudent.value = student;
   Object.assign(form, {
     firstName: student.firstName,
     lastName: student.lastName,
     email: student.email,
     studentId: student.studentId,
-    dateOfBirth: student.dateOfBirth || '',
-    admissionDate: student.admissionDate || '',
-    phoneNumber: student.phoneNumber || '',
-    address: student.address || ''
-  })
-}
+    dateOfBirth: student.dateOfBirth || "",
+    admissionDate: student.admissionDate || "",
+    phoneNumber: student.phoneNumber || "",
+    address: student.address || "",
+  });
+};
 
 const deleteStudent = async (student: Student) => {
-  if (confirm('Are you sure you want to delete this student?')) {
+  if (confirm("Are you sure you want to delete this student?")) {
     try {
-      await studentService.delete(student.id)
-      await loadStudents()
+      await studentService.delete(student.id);
+      await loadStudents();
     } catch (error) {
-      console.error('Failed to delete student:', error)
+      console.error("Failed to delete student:", error);
     }
   }
-}
+};
 
 const saveStudent = async () => {
   try {
     if (editingStudent.value) {
-      await studentService.update(editingStudent.value.id, form)
+      await studentService.update(editingStudent.value.id, form);
     } else {
-      await studentService.create(form)
+      await studentService.create(form);
     }
-    await loadStudents()
-    closeModal()
+    await loadStudents();
+    closeModal();
   } catch (error) {
-    console.error('Failed to save student:', error)
+    console.error("Failed to save student:", error);
   }
-}
+};
 
 const closeModal = () => {
-  showCreateModal.value = false
-  editingStudent.value = null
+  showCreateModal.value = false;
+  editingStudent.value = null;
   Object.assign(form, {
-    firstName: '',
-    lastName: '',
-    email: '',
-    studentId: '',
-    dateOfBirth: '',
-    admissionDate: '',
-    phoneNumber: '',
-    address: ''
-  })
-}
+    firstName: "",
+    lastName: "",
+    email: "",
+    studentId: "",
+    dateOfBirth: "",
+    admissionDate: "",
+    phoneNumber: "",
+    address: "",
+  });
+};
 
 const formatDate = (dateString?: string) => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString()
-}
+  if (!dateString) return "N/A";
+  return new Date(dateString).toLocaleDateString();
+};
 
 onMounted(() => {
-  loadStudents()
-})
+  loadStudents();
+});
 </script>
