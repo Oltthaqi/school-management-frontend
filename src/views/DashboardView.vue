@@ -10,7 +10,7 @@
 
       <!-- Stats Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="card">
+        <Card>
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-600">Total Students</p>
@@ -26,9 +26,9 @@
               <UserGroupIcon class="h-6 w-6 text-blue-600" />
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div class="card">
+        <Card>
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-600">Total Teachers</p>
@@ -44,13 +44,13 @@
               <AcademicCapIcon class="h-6 w-6 text-green-600" />
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div class="card">
+        <Card>
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-600">Total Courses</p>
-              <p class="text-2xl font-semibold text-gray-900">156</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ totalCourses || 0 }}</p>
             </div>
             <div
               class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center"
@@ -58,13 +58,13 @@
               <BookOpenIcon class="h-6 w-6 text-purple-600" />
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div class="card">
+        <Card>
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-600">Enrollments</p>
-              <p class="text-2xl font-semibold text-gray-900">3,456</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ totalEnrollments || 0 }}</p>
             </div>
             <div
               class="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center"
@@ -72,56 +72,68 @@
               <ClipboardDocumentListIcon class="h-6 w-6 text-yellow-600" />
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       <!-- Recent Activity -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="card">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">
-            Recent Enrollments
-          </h3>
+        <Card>
+          <template #header>
+            <h3 class="text-lg font-medium text-gray-900">Recent Enrollments</h3>
+          </template>
+          
           <div class="space-y-3">
             <div
-              v-for="i in 5"
-              :key="i"
+              v-for="enrollment in recentEnrollments"
+              :key="enrollment.id"
               class="flex items-center justify-between py-2"
             >
               <div class="flex items-center space-x-3">
-                <div class="h-8 w-8 bg-gray-200 rounded-full"></div>
+                <div class="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
+                  <span class="text-xs font-medium text-gray-600">
+                    {{ getInitials(enrollment.student) }}
+                  </span>
+                </div>
                 <div>
                   <p class="text-sm font-medium text-gray-900">
-                    Student Name {{ i }}
+                    {{ enrollment.student.firstName }} {{ enrollment.student.lastName }}
                   </p>
-                  <p class="text-xs text-gray-500">Course Name {{ i }}</p>
+                  <p class="text-xs text-gray-500">{{ enrollment.course.name }}</p>
                 </div>
               </div>
-              <span class="text-xs text-gray-500">2 hours ago</span>
+              <span class="text-xs text-gray-500">{{ formatRelativeTime(enrollment.enrolledAt) }}</span>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div class="card">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Grades</h3>
+        <Card>
+          <template #header>
+            <h3 class="text-lg font-medium text-gray-900">Recent Grades</h3>
+          </template>
+          
           <div class="space-y-3">
             <div
-              v-for="i in 5"
-              :key="i"
+              v-for="grade in recentGrades"
+              :key="grade.id"
               class="flex items-center justify-between py-2"
             >
               <div class="flex items-center space-x-3">
-                <div class="h-8 w-8 bg-gray-200 rounded-full"></div>
+                <div class="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
+                  <span class="text-xs font-medium text-gray-600">
+                    {{ getGradeInitials(grade) }}
+                  </span>
+                </div>
                 <div>
                   <p class="text-sm font-medium text-gray-900">
-                    Student Name {{ i }}
+                    Grade Updated
                   </p>
-                  <p class="text-xs text-gray-500">Course Name {{ i }}</p>
+                  <p class="text-xs text-gray-500">Course Grade</p>
                 </div>
               </div>
-              <span class="text-sm font-semibold text-green-600">A+</span>
+              <span class="text-sm font-semibold text-green-600">{{ grade.letterGrade }}</span>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   </AppLayout>
@@ -130,8 +142,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import AppLayout from "../components/layout/AppLayout.vue";
+import Card from "../components/ui/Card.vue";
 import { dashboardService } from "../services/dashboardService";
+import { enrollmentService } from "../services/enrollmentService";
+import { gradeService } from "../services/gradeService";
+import { courseService } from "../services/courseService";
 import { useAuthStore } from "../stores/auth";
+import type { Enrollment, Grade } from "../types";
 import {
   UserGroupIcon,
   AcademicCapIcon,
@@ -142,25 +159,63 @@ import {
 const authStore = useAuthStore();
 const totalStudents = ref<number | null>(null);
 const totalTeachers = ref<number | null>(null);
+const totalCourses = ref<number | null>(null);
+const totalEnrollments = ref<number | null>(null);
+const recentEnrollments = ref<Enrollment[]>([]);
+const recentGrades = ref<Grade[]>([]);
 
-const totalStudentsCount = async () => {
+const loadDashboardData = async () => {
   try {
+    // Load stats
     totalStudents.value = await dashboardService.getTotalStudents();
-  } catch (err) {
-    console.error("could not load total students", err);
-  }
-};
-
-const totalTeachersCount = async () => {
-  try {
     totalTeachers.value = await dashboardService.getTotalTeachers();
-  } catch (err) {
-    console.error("could not load total teachers", err);
+    
+    // Load courses count
+    const courses = await courseService.getAll();
+    totalCourses.value = courses.length;
+    
+    // Load enrollments and get recent ones
+    const enrollments = await enrollmentService.getAll();
+    totalEnrollments.value = enrollments.length;
+    recentEnrollments.value = enrollments
+      .sort((a, b) => new Date(b.enrolledAt).getTime() - new Date(a.enrolledAt).getTime())
+      .slice(0, 5);
+    
+    // Load recent grades
+    const grades = await gradeService.getAll();
+    recentGrades.value = grades
+      .sort((a, b) => new Date(b.gradedAt).getTime() - new Date(a.gradedAt).getTime())
+      .slice(0, 5);
+      
+  } catch (error) {
+    console.error("Failed to load dashboard data:", error);
   }
 };
 
-onMounted(async () => {
-  totalStudentsCount();
-  totalTeachersCount();
+const getInitials = (student: Enrollment['student']) => {
+  return `${student.firstName.charAt(0)}${student.lastName.charAt(0)}`;
+};
+
+const getGradeInitials = (grade: Grade) => {
+  // This would need to be updated based on actual grade structure
+  return "GR";
+};
+
+const formatRelativeTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+  
+  if (diffInHours < 1) return "Just now";
+  if (diffInHours < 24) return `${diffInHours} hours ago`;
+  
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+  
+  return date.toLocaleDateString();
+};
+
+onMounted(() => {
+  loadDashboardData();
 });
 </script>
