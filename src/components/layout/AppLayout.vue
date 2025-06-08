@@ -5,15 +5,17 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center">
-            <h1 class="text-xl font-semibold text-gray-900">School Management</h1>
+            <h1 class="text-xl font-semibold text-gray-900">
+              School Management
+            </h1>
           </div>
-          
+
           <div class="flex items-center space-x-4">
             <span class="text-sm text-gray-600">
               Welcome, {{ authStore.user?.firstName }}
             </span>
             <button
-              @click="authStore.logout"
+              @click="handleLogout"
               class="text-sm text-gray-500 hover:text-gray-700"
             >
               Logout
@@ -28,7 +30,7 @@
       <aside class="w-64 bg-white shadow-sm min-h-screen">
         <nav class="mt-8 px-4">
           <ul class="space-y-2">
-            <li>
+            <li v-if="authStore.isAdmin">
               <router-link
                 to="/dashboard"
                 class="nav-link"
@@ -38,8 +40,8 @@
                 Dashboard
               </router-link>
             </li>
-            
-            <li>
+
+            <li v-if="authStore.isAdmin || authStore.isTeacher">
               <router-link
                 to="/students"
                 class="nav-link"
@@ -49,7 +51,7 @@
                 Students
               </router-link>
             </li>
-            
+
             <li v-if="authStore.isAdmin">
               <router-link
                 to="/teachers"
@@ -60,7 +62,7 @@
                 Teachers
               </router-link>
             </li>
-            
+
             <li>
               <router-link
                 to="/courses"
@@ -71,7 +73,7 @@
                 Courses
               </router-link>
             </li>
-            
+
             <li>
               <router-link
                 to="/enrollments"
@@ -82,7 +84,7 @@
                 Enrollments
               </router-link>
             </li>
-            
+
             <li>
               <router-link
                 to="/grades"
@@ -93,17 +95,17 @@
                 Grades
               </router-link>
             </li>
-            
-            <li v-if="authStore.isAdmin">
+
+            <!-- <li v-if="authStore.isAdmin">
               <router-link
                 to="/admissions"
                 class="nav-link"
                 :class="{ 'nav-link-active': $route.name === 'Admissions' }"
-              >
-                <DocumentTextIcon class="h-5 w-5" />
+              > -->
+            <!-- <DocumentTextIcon class="h-5 w-5" />
                 Admissions
               </router-link>
-            </li>
+            </li> -->
           </ul>
         </nav>
       </aside>
@@ -117,7 +119,8 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '../../stores/auth'
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../../stores/auth";
 import {
   HomeIcon,
   UserGroupIcon,
@@ -125,10 +128,16 @@ import {
   BookOpenIcon,
   ClipboardDocumentListIcon,
   ChartBarIcon,
-  DocumentTextIcon
-} from '@heroicons/vue/24/outline'
+  DocumentTextIcon,
+} from "@heroicons/vue/24/outline";
 
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
+
+const handleLogout = () => {
+  authStore.logout();
+  router.replace({ name: "Login" });
+};
 </script>
 
 <style scoped>
