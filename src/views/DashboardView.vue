@@ -11,7 +11,6 @@
       <!-- Stats Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
-        <Card>
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-600">Total Students</p>
@@ -28,9 +27,7 @@
             </div>
           </div>
         </Card>
-        </Card>
 
-        <Card>
         <Card>
           <div class="flex items-center justify-between">
             <div>
@@ -64,7 +61,6 @@
             </div>
           </div>
         </Card>
-        </Card>
 
         <Card>
           <div class="flex items-center justify-between">
@@ -81,22 +77,19 @@
             </div>
           </div>
         </Card>
-        </Card>
       </div>
 
       <!-- Recent Activity -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Enrollments Card -->
         <Card>
           <template #header>
             <h3 class="text-lg font-medium text-gray-900">
               Recent Enrollments
             </h3>
           </template>
-
           <div class="space-y-3">
             <div
-              v-for="enrollment in recentEnrollments"
-              :key="enrollment.id"
               v-for="enrollment in recentEnrollments"
               :key="enrollment.id"
               class="flex items-center justify-between py-2"
@@ -119,23 +112,20 @@
                   </p>
                 </div>
               </div>
-              <span class="text-xs text-gray-500">{{
-                formatRelativeTime(enrollment.enrolledAt)
-              }}</span>
+              <span class="text-xs text-gray-500">
+                {{ formatRelativeTime(enrollment.enrolledAt) }}
+              </span>
             </div>
           </div>
         </Card>
-        </Card>
 
+        <!-- Recent Grades Card -->
         <Card>
           <template #header>
             <h3 class="text-lg font-medium text-gray-900">Recent Grades</h3>
           </template>
-
           <div class="space-y-3">
             <div
-              v-for="grade in recentGrades"
-              :key="grade.id"
               v-for="grade in recentGrades"
               :key="grade.id"
               class="flex items-center justify-between py-2"
@@ -150,15 +140,16 @@
                 </div>
                 <div>
                   <p class="text-sm font-medium text-gray-900">Grade Updated</p>
-                  <p class="text-xs text-gray-500">Course Grade</p>
+                  <p class="text-xs text-gray-500">
+                    {{ grade.enrollmentId }}
+                  </p>
                 </div>
               </div>
-              <span class="text-sm font-semibold text-green-600">{{
-                grade.letterGrade
-              }}</span>
+              <span class="text-sm font-semibold text-green-600">
+                {{ grade.letterGrade }}
+              </span>
             </div>
           </div>
-        </Card>
         </Card>
       </div>
     </div>
@@ -169,16 +160,11 @@
 import { onMounted, ref } from "vue";
 import AppLayout from "../components/layout/AppLayout.vue";
 import Card from "../components/ui/Card.vue";
-import Card from "../components/ui/Card.vue";
 import { dashboardService } from "../services/dashboardService";
 import { enrollmentService } from "../services/enrollmentService";
 import { gradeService } from "../services/gradeService";
 import { courseService } from "../services/courseService";
-import { enrollmentService } from "../services/enrollmentService";
-import { gradeService } from "../services/gradeService";
-import { courseService } from "../services/courseService";
 import { useAuthStore } from "../stores/auth";
-import type { Enrollment, Grade } from "../types";
 import type { Enrollment, Grade } from "../types";
 import {
   UserGroupIcon,
@@ -194,15 +180,9 @@ const totalCourses = ref<number | null>(null);
 const totalEnrollments = ref<number | null>(null);
 const recentEnrollments = ref<Enrollment[]>([]);
 const recentGrades = ref<Grade[]>([]);
-const totalCourses = ref<number | null>(null);
-const totalEnrollments = ref<number | null>(null);
-const recentEnrollments = ref<Enrollment[]>([]);
-const recentGrades = ref<Grade[]>([]);
 
 const loadDashboardData = async () => {
-const loadDashboardData = async () => {
   try {
-    // Load stats
     // Load stats
     totalStudents.value = await dashboardService.getTotalStudents();
     totalTeachers.value = await dashboardService.getTotalTeachers();

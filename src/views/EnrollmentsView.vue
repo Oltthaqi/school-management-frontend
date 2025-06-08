@@ -3,10 +3,7 @@
     <div class="space-y-6">
       <div class="flex justify-between items-center">
         <h1 class="text-2xl font-semibold text-gray-900">Enrollments</h1>
-        <Button
-          v-if="authStore.isAdmin"
-          @click="showCreateModal = true"
-        >
+        <Button v-if="authStore.isAdmin" @click="showCreateModal = true">
           Add Enrollment
         </Button>
       </div>
@@ -15,25 +12,56 @@
       <Card>
         <Table>
           <template #header>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled Date</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Student
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Course
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Enrolled Date
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Status
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Grade
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Actions
+            </th>
           </template>
-          
+
           <tr v-for="enrollment in enrollments" :key="enrollment.id">
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               <div>
-                <p class="font-medium">{{ enrollment.student.firstName }} {{ enrollment.student.lastName }}</p>
-                <p class="text-sm text-gray-500">{{ enrollment.student.studentId }}</p>
+                <p class="font-medium">
+                  {{ enrollment.student.firstName }}
+                  {{ enrollment.student.lastName }}
+                </p>
+                <p class="text-sm text-gray-500">
+                  {{ enrollment.student.studentId }}
+                </p>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               <div>
                 <p class="font-medium">{{ enrollment.course.courseCode }}</p>
-                <p class="text-sm text-gray-500">{{ enrollment.course.name }}</p>
+                <p class="text-sm text-gray-500">
+                  {{ enrollment.course.name }}
+                </p>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -85,34 +113,30 @@
     <!-- Create Modal -->
     <Modal v-if="showCreateModal" @close="closeCreateModal">
       <div class="p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Enrollment</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-4">
+          Add New Enrollment
+        </h3>
 
         <form @submit.prevent="saveEnrollment" class="space-y-4">
           <div>
             <label class="form-label">Student</label>
-            <select
-              v-model="form.studentId"
-              required
-              class="form-input"
-            >
+            <select v-model="form.studentId" required class="form-input">
               <option value="">Select a student</option>
               <option
                 v-for="student in students"
                 :key="student.id"
                 :value="student.id"
               >
-                {{ student.firstName }} {{ student.lastName }} ({{ student.studentId }})
+                {{ student.firstName }} {{ student.lastName }} ({{
+                  student.studentId
+                }})
               </option>
             </select>
           </div>
 
           <div>
             <label class="form-label">Course</label>
-            <select
-              v-model="form.courseId"
-              required
-              class="form-input"
-            >
+            <select v-model="form.courseId" required class="form-input">
               <option value="">Select a course</option>
               <option
                 v-for="course in courses"
@@ -128,9 +152,7 @@
             <Button variant="secondary" @click="closeCreateModal">
               Cancel
             </Button>
-            <Button type="submit">
-              Create
-            </Button>
+            <Button type="submit"> Create </Button>
           </div>
         </form>
       </div>
@@ -146,28 +168,39 @@
         <div>
           <label class="block text-sm font-medium text-gray-700">Student</label>
           <p class="mt-1 text-sm text-gray-900">
-            {{ viewingEnrollment.student.firstName }} {{ viewingEnrollment.student.lastName }}
-            ({{ viewingEnrollment.student.studentId }})
+            {{ viewingEnrollment.student.firstName }}
+            {{ viewingEnrollment.student.lastName }} ({{
+              viewingEnrollment.student.studentId
+            }})
           </p>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Course</label>
           <p class="mt-1 text-sm text-gray-900">
-            {{ viewingEnrollment.course.courseCode }} - {{ viewingEnrollment.course.name }}
+            {{ viewingEnrollment.course.courseCode }} -
+            {{ viewingEnrollment.course.name }}
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Enrolled Date</label>
-          <p class="mt-1 text-sm text-gray-900">{{ formatDate(viewingEnrollment.enrolledAt) }}</p>
+          <label class="block text-sm font-medium text-gray-700"
+            >Enrolled Date</label
+          >
+          <p class="mt-1 text-sm text-gray-900">
+            {{ formatDate(viewingEnrollment.enrolledAt) }}
+          </p>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Status</label>
-          <p class="mt-1 text-sm text-gray-900">{{ viewingEnrollment.status }}</p>
+          <p class="mt-1 text-sm text-gray-900">
+            {{ viewingEnrollment.status }}
+          </p>
         </div>
         <div v-if="viewingEnrollment.grade" class="col-span-2">
           <label class="block text-sm font-medium text-gray-700">Grade</label>
           <p class="mt-1 text-sm text-gray-900">
-            {{ viewingEnrollment.grade.letterGrade }} ({{ viewingEnrollment.grade.gradeValue }})
+            {{ viewingEnrollment.grade.letterGrade }} ({{
+              viewingEnrollment.grade.gradeValue
+            }})
           </p>
         </div>
       </div>
@@ -257,7 +290,7 @@ const confirmDelete = (enrollment: Enrollment) => {
 
 const deleteEnrollment = async () => {
   if (!enrollmentToDelete.value) return;
-  
+
   try {
     await enrollmentService.delete(enrollmentToDelete.value.id);
     await loadEnrollments();
@@ -269,11 +302,11 @@ const deleteEnrollment = async () => {
 
 const saveEnrollment = async () => {
   try {
-    const enrollmentData = {
-      studentId: parseInt(form.studentId),
-      courseId: parseInt(form.courseId),
+    const enrollmentData: Partial<Enrollment> = {
+      student: { id: parseInt(form.studentId) } as Student,
+      course: { id: parseInt(form.courseId) } as Course,
     };
-    
+
     await enrollmentService.create(enrollmentData);
     await loadEnrollments();
     closeCreateModal();
@@ -295,14 +328,15 @@ const formatDate = (dateString: string) => {
 };
 
 const getStatusBadgeClass = (status: string) => {
-  const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
-  
+  const baseClasses =
+    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
+
   switch (status.toLowerCase()) {
-    case 'active':
+    case "active":
       return `${baseClasses} bg-green-100 text-green-800`;
-    case 'completed':
+    case "completed":
       return `${baseClasses} bg-blue-100 text-blue-800`;
-    case 'dropped':
+    case "dropped":
       return `${baseClasses} bg-red-100 text-red-800`;
     default:
       return `${baseClasses} bg-gray-100 text-gray-800`;
