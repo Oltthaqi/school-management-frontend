@@ -8,7 +8,8 @@ import DetailModal from "../ui/DetailModal.vue";
 import ConfirmationModal from "../ui/ConfirmationModal.vue";
 import BaseInput from "../ui/BaseInput.vue";
 import { teacherService } from "../../services/teacherService";
-import type { Teacher } from "../types";
+import type { Teacher } from "../../types";
+import { toast } from "vue3-toastify";
 
 const teachers = ref<Teacher[]>([]);
 const showCreateModal = ref(false);
@@ -31,6 +32,7 @@ const loadTeachers = async () => {
     teachers.value = await teacherService.getAll();
   } catch (error) {
     console.error("Failed to load teachers:", error);
+    toast.error("Failed to load teachers.");
   }
 };
 
@@ -39,6 +41,7 @@ const viewTeacher = async (teacher: Teacher) => {
     viewingTeacher.value = await teacherService.getById(teacher.id);
   } catch (error) {
     console.error("Failed to load teacher details:", error);
+    toast.error("Failed to load teacher details.");
   }
 };
 
@@ -65,8 +68,10 @@ const deleteTeacher = async () => {
     await teacherService.delete(teacherToDelete.value.id);
     await loadTeachers();
     teacherToDelete.value = null;
+    toast.success("Teacher deleted successfully.");
   } catch (error) {
     console.error("Failed to delete teacher:", error);
+    toast.error("Failed to delete teacher.");
   }
 };
 
@@ -74,13 +79,16 @@ const saveTeacher = async () => {
   try {
     if (editingTeacher.value) {
       await teacherService.update(editingTeacher.value.id, form);
+      toast.success("Teacher updated successfully.");
     } else {
       await teacherService.create(form);
+      toast.success("Teacher created successfully.");
     }
     await loadTeachers();
     closeModal();
   } catch (error) {
     console.error("Failed to save teacher:", error);
+    toast.error("Failed to save teacher.");
   }
 };
 

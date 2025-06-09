@@ -10,6 +10,7 @@ import BaseInput from "../ui/BaseInput.vue";
 import { useAuthStore } from "../../stores/auth";
 import { studentService } from "../../services/studentService";
 import type { Student } from "../../types";
+import { toast } from "vue3-toastify";
 
 const authStore = useAuthStore();
 
@@ -35,6 +36,7 @@ const loadStudents = async () => {
     students.value = await studentService.getAll();
   } catch (error) {
     console.error("Failed to load students:", error);
+    toast.error("Failed to load students.");
   }
 };
 
@@ -48,6 +50,7 @@ const viewStudent = async (student: Student) => {
     viewingStudent.value = await studentService.getById(student.id);
   } catch (error) {
     console.error("Failed to load student details:", error);
+    toast.error("Failed to load student details.");
   }
 };
 
@@ -74,9 +77,11 @@ const deleteStudent = async () => {
   try {
     await studentService.delete(studentToDelete.value.id);
     await loadStudents();
+    toast.success("Student deleted successfully.");
     studentToDelete.value = null;
   } catch (error) {
     console.error("Failed to delete student:", error);
+    toast.error("Failed to delete student.");
   }
 };
 
@@ -84,13 +89,16 @@ const saveStudent = async () => {
   try {
     if (editingStudent.value) {
       await studentService.update(editingStudent.value.id, form);
+      toast.success("Student updated successfully.");
     } else {
       await studentService.create(form);
+      toast.success("Student created successfully.");
     }
     await loadStudents();
     closeModal();
   } catch (error) {
     console.error("Failed to save student:", error);
+    toast.error("Failed to save student.");
   }
 };
 
@@ -148,7 +156,6 @@ onMounted(() => {
       :canCreate="authStore.isAdmin"
     />
 
-    <!-- Create/Edit Modal -->
     <Modal v-if="showCreateModal || editingStudent" @close="closeModal">
       <div class="p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">
@@ -189,7 +196,6 @@ onMounted(() => {
       </div>
     </Modal>
 
-    <!-- Detail Modal -->
     <DetailModal
       v-if="viewingStudent"
       :title="`Student Details - ${viewingStudent.firstName} ${viewingStudent.lastName}`"
@@ -241,7 +247,6 @@ onMounted(() => {
       </div>
     </DetailModal>
 
-    <!-- Confirmation Modal -->
     <ConfirmationModal
       v-if="studentToDelete"
       title="Delete Student"

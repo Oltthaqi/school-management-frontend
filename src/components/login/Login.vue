@@ -14,9 +14,10 @@ const form = reactive({
 const handleLogin = async () => {
   try {
     await authStore.login(form);
+    toast.success("Logged in successfully!");
     router.push("/dashboard");
   } catch {
-    // handled by store
+    toast.error(authStore.error || "Login failed. Please try again.");
   }
 };
 </script>
