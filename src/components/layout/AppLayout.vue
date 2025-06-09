@@ -74,7 +74,7 @@
               </router-link>
             </li>
 
-            <li>
+            <li v-if="authStore.isAdmin">
               <router-link
                 to="/enrollments"
                 class="nav-link"

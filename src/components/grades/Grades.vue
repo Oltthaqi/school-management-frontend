@@ -17,6 +17,7 @@ const grades = ref<Grade[]>([]);
 const editingGrade = ref<Grade | null>(null);
 const viewingGrade = ref<Grade | null>(null);
 const gradeToDelete = ref<Grade | null>(null);
+const showCreateModal = ref(false);
 
 const form = reactive({
   gradeValue: 0,
@@ -138,6 +139,9 @@ onMounted(() => {
     <div class="space-y-6">
       <div class="flex justify-between items-center">
         <h1 class="text-2xl font-semibold text-gray-900">Grades</h1>
+        <Button v-if="authStore.isTeacher" @click="showCreateModal = true">
+          Add Grade
+        </Button>
       </div>
 
       <!-- Grades Table -->
