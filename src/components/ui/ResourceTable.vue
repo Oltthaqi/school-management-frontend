@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { PropType } from "vue";
 import Card from "./Card.vue";
 import Table from "./Table.vue";
 import Button from "./Button.vue";
 
+// Define column structure
 type Column<T> = {
   label: string;
   field: keyof T;
@@ -21,17 +22,10 @@ const props = defineProps<{
   title: string;
   items: any[];
   columns: Column<any>[];
-  actions?: Action<any>[]; // optional
+  actions?: Action<any>[];
   onCreate?: () => void;
   canCreate?: boolean;
 }>();
-
-// Filter out any undefined actions
-const safeActions = computed(() =>
-  (props.actions ?? []).filter(
-    (a): a is Action<any> => typeof a !== "undefined"
-  )
-);
 </script>
 
 <template>
@@ -66,19 +60,21 @@ const safeActions = computed(() =>
             :key="col.field.toString()"
             class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
           >
-            {{
-              col.format ? col.format(item[col.field], item) : item[col.field]
-            }}
+            <span
+              v-if="col.format"
+              v-html="col.format(item[col.field], item)"
+            ></span>
+            <span v-else>{{ item[col.field] }}</span>
           </td>
 
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
             <div class="flex space-x-2">
               <template
-                v-for="(action, index) in safeActions"
-                :key="`${action.label}-${index}`"
+                v-for="(action, index) in actions || []"
+                :key="`${action?.label}-${index}`"
               >
                 <Button
-                  v-if="!action.show || action.show(item)"
+                  v-if="action && (!action.show || action.show(item))"
                   :variant="action.variant || 'secondary'"
                   size="sm"
                   @click="() => action.onClick(item)"
