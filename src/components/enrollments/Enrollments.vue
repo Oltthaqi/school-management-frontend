@@ -12,6 +12,7 @@ import { enrollmentService } from "../../services/enrollmentService";
 import { studentService } from "../../services/studentService";
 import { courseService } from "../../services/courseService";
 import type { Enrollment, Student, Course } from "../types";
+import { toast } from "vue3-toastify";
 
 const authStore = useAuthStore();
 
@@ -75,23 +76,30 @@ const deleteEnrollment = async () => {
     await enrollmentService.delete(enrollmentToDelete.value.id);
     await loadEnrollments();
     enrollmentToDelete.value = null;
-  } catch (error) {
+    toast.success("Enrollment deleted successfully.");
+  } catch (error: any) {
     console.error("Failed to delete enrollment:", error);
+    toast.error(
+      error?.response?.data?.message || "Failed to delete enrollment."
+    );
   }
 };
 
 const saveEnrollment = async () => {
   try {
-    const enrollmentData: Partial<Enrollment> = {
-      student: { id: parseInt(form.studentId) } as Student,
-      course: { id: parseInt(form.courseId) } as Course,
+    const enrollmentData = {
+      studentId: parseInt(form.studentId),
+      courseId: parseInt(form.courseId),
+      status: "ACTIVE", // optional, but you can include it if needed
     };
 
     await enrollmentService.create(enrollmentData);
     await loadEnrollments();
     closeCreateModal();
-  } catch (error) {
+    toast.success("Enrollment created successfully.");
+  } catch (error: any) {
     console.error("Failed to save enrollment:", error);
+    toast.error(error?.response?.data?.message || "Failed to save enrollment.");
   }
 };
 
