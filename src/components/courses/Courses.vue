@@ -135,10 +135,7 @@ onMounted(() => {
     <div class="space-y-6">
       <div class="flex justify-between items-center">
         <h1 class="text-2xl font-semibold text-gray-900">Courses</h1>
-        <Button
-          v-if="authStore.isAdmin || authStore.isTeacher"
-          @click="showCreateModal = true"
-        >
+        <Button v-if="authStore.isAdmin" @click="showCreateModal = true">
           Add Course
         </Button>
       </div>
