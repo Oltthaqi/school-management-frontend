@@ -1,31 +1,20 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import AppLayout from "../layout/AppLayout.vue";
 import ResourceTable from "../ui/ResourceTable.vue";
-import Modal from "../ui/Modal.vue";
-import Button from "../ui/Button.vue";
 import DetailModal from "../ui/DetailModal.vue";
 import ConfirmationModal from "../ui/ConfirmationModal.vue";
-import BaseInput from "../ui/BaseInput.vue";
 import { teacherService } from "../../services/teacherService";
 import type { Teacher } from "../../types";
 import { toast } from "vue3-toastify";
+import CreateOrEditTeacher from "./CreateOrEditTeacher.vue";
+import { teacherColumns, teacherActions } from "../../utils/constants";
 
 const teachers = ref<Teacher[]>([]);
 const showCreateModal = ref(false);
 const editingTeacher = ref<Teacher | null>(null);
 const viewingTeacher = ref<Teacher | null>(null);
 const teacherToDelete = ref<Teacher | null>(null);
-
-const form = reactive({
-  firstName: "",
-  lastName: "",
-  email: "",
-  employeeId: "",
-  department: "",
-  phoneNumber: "",
-  specialization: "",
-});
 
 const loadTeachers = async () => {
   try {
@@ -47,15 +36,6 @@ const viewTeacher = async (teacher: Teacher) => {
 
 const editTeacher = (teacher: Teacher) => {
   editingTeacher.value = teacher;
-  Object.assign(form, {
-    firstName: teacher.firstName,
-    lastName: teacher.lastName,
-    email: teacher.email,
-    employeeId: teacher.employeeId,
-    department: teacher.department,
-    phoneNumber: teacher.phoneNumber || "",
-    specialization: teacher.specialization || "",
-  });
 };
 
 const confirmDelete = (teacher: Teacher) => {
@@ -75,7 +55,7 @@ const deleteTeacher = async () => {
   }
 };
 
-const saveTeacher = async () => {
+const saveTeacher = async (form: Partial<Teacher>) => {
   try {
     if (editingTeacher.value) {
       await teacherService.update(editingTeacher.value.id, form);
@@ -95,15 +75,6 @@ const saveTeacher = async () => {
 const closeModal = () => {
   showCreateModal.value = false;
   editingTeacher.value = null;
-  Object.assign(form, {
-    firstName: "",
-    lastName: "",
-    email: "",
-    employeeId: "",
-    department: "",
-    phoneNumber: "",
-    specialization: "",
-  });
 };
 
 onMounted(() => {
@@ -116,64 +87,20 @@ onMounted(() => {
     <ResourceTable
       title="Teachers"
       :items="teachers"
-      :columns="[
-        { label: 'Employee ID', field: 'employeeId' },
-        {
-          label: 'Name',
-          field: 'fullName',
-          format: (_, t) => t.firstName + ' ' + t.lastName,
-        },
-        { label: 'Email', field: 'email' },
-        { label: 'Department', field: 'department' },
-        {
-          label: 'Specialization',
-          field: 'specialization',
-          format: (value) => value || 'N/A',
-        },
-      ]"
-      :actions="[
-        { label: 'View', onClick: viewTeacher },
-        { label: 'Edit', onClick: editTeacher, variant: 'primary' },
-        { label: 'Delete', onClick: confirmDelete, variant: 'danger' },
-      ]"
+      :columns="teacherColumns"
+      :actions="teacherActions(viewTeacher, editTeacher, confirmDelete)"
       :onCreate="() => (showCreateModal = true)"
       :canCreate="true"
     />
 
-    <!-- Create/Edit Modal -->
-    <Modal v-if="showCreateModal || editingTeacher" @close="closeModal">
-      <div class="p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">
-          {{ editingTeacher ? "Edit Teacher" : "Add New Teacher" }}
-        </h3>
-        <form @submit.prevent="saveTeacher" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <BaseInput v-model="form.firstName" label="First Name" required />
-            <BaseInput v-model="form.lastName" label="Last Name" required />
-          </div>
-          <BaseInput v-model="form.email" label="Email" type="email" required />
-          <div class="grid grid-cols-2 gap-4">
-            <BaseInput v-model="form.employeeId" label="Employee ID" required />
-            <BaseInput v-model="form.department" label="Department" required />
-          </div>
-          <BaseInput
-            v-model="form.phoneNumber"
-            label="Phone Number"
-            type="tel"
-          />
-          <BaseInput v-model="form.specialization" label="Specialization" />
+    <CreateOrEditTeacher
+      v-if="showCreateModal || editingTeacher"
+      :show="true"
+      :teacher="editingTeacher"
+      @close="closeModal"
+      @save="saveTeacher"
+    />
 
-          <div class="flex justify-end space-x-3 pt-4">
-            <Button variant="secondary" @click="closeModal">Cancel</Button>
-            <Button type="submit">
-              {{ editingTeacher ? "Update" : "Create" }}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </Modal>
-
-    <!-- Detail Modal -->
     <DetailModal
       v-if="viewingTeacher"
       :title="`Teacher Details - ${viewingTeacher.firstName} ${viewingTeacher.lastName}`"
@@ -219,7 +146,6 @@ onMounted(() => {
       </div>
     </DetailModal>
 
-    <!-- Confirmation Modal -->
     <ConfirmationModal
       v-if="teacherToDelete"
       title="Delete Teacher"

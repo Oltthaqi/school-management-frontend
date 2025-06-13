@@ -11,6 +11,7 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.16",
     "@heroicons/vue": "^2.0.18",
+    "all": "^0.0.0",
     "axios": "^1.6.2",
     "pinia": "^2.1.7",
     "vue": "^3.4.38",

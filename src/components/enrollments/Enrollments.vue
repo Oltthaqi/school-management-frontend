@@ -1,32 +1,25 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import AppLayout from "../layout/AppLayout.vue";
-import Modal from "../ui/Modal.vue";
-import Button from "../ui/Button.vue";
-import Card from "../ui/Card.vue";
-import Table from "../ui/Table.vue";
-import DetailModal from "../ui/DetailModal.vue";
-import ConfirmationModal from "../ui/ConfirmationModal.vue";
 import { useAuthStore } from "../../stores/auth";
 import { enrollmentService } from "../../services/enrollmentService";
 import { studentService } from "../../services/studentService";
 import { courseService } from "../../services/courseService";
-import type { Enrollment, Student, Course } from "../types";
+import type { Enrollment, Student, Course } from "../../types";
 import { toast } from "vue3-toastify";
+import ResourceTable from "../ui/ResourceTable.vue";
+import CreateEnrollmentModal from "./CreateEnrollmentModal.vue";
+import DetailModal from "../ui/DetailModal.vue";
+import ConfirmationModal from "../ui/ConfirmationModal.vue";
+import { enrollmentColumns } from "../../utils/constants";
 
 const authStore = useAuthStore();
-
 const enrollments = ref<Enrollment[]>([]);
 const students = ref<Student[]>([]);
 const courses = ref<Course[]>([]);
 const showCreateModal = ref(false);
 const viewingEnrollment = ref<Enrollment | null>(null);
 const enrollmentToDelete = ref<Enrollment | null>(null);
-
-const form = reactive({
-  studentId: "",
-  courseId: "",
-});
 
 const loadEnrollments = async () => {
   try {
@@ -52,16 +45,11 @@ const loadCourses = async () => {
   }
 };
 
-const viewEnrollment = async (enrollment: Enrollment) => {
-  try {
-    viewingEnrollment.value = await enrollmentService.getById(enrollment.id);
-  } catch (error) {
-    console.error("Failed to load enrollment details:", error);
-  }
+const viewEnrollment = (enrollment: Enrollment) => {
+  viewingEnrollment.value = enrollment;
 };
 
 const gradeEnrollment = (enrollment: Enrollment) => {
-  // TODO: Implement grade modal
   console.log("Grade enrollment:", enrollment);
 };
 
@@ -71,63 +59,32 @@ const confirmDelete = (enrollment: Enrollment) => {
 
 const deleteEnrollment = async () => {
   if (!enrollmentToDelete.value) return;
-
   try {
     await enrollmentService.delete(enrollmentToDelete.value.id);
     await loadEnrollments();
     enrollmentToDelete.value = null;
     toast.success("Enrollment deleted successfully.");
   } catch (error: any) {
-    console.error("Failed to delete enrollment:", error);
     toast.error(
       error?.response?.data?.message || "Failed to delete enrollment."
     );
   }
 };
 
-const saveEnrollment = async () => {
-  try {
-    const enrollmentData = {
-      studentId: parseInt(form.studentId),
-      courseId: parseInt(form.courseId),
-      status: "ACTIVE", // optional, but you can include it if needed
-    };
+const formatDate = (date: string) => new Date(date).toLocaleDateString();
 
-    await enrollmentService.create(enrollmentData);
-    await loadEnrollments();
-    closeCreateModal();
-    toast.success("Enrollment created successfully.");
-  } catch (error: any) {
-    console.error("Failed to save enrollment:", error);
-    toast.error(error?.response?.data?.message || "Failed to save enrollment.");
-  }
-};
-
-const closeCreateModal = () => {
-  showCreateModal.value = false;
-  Object.assign(form, {
-    studentId: "",
-    courseId: "",
-  });
-};
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString();
-};
-
-const getStatusBadgeClass = (status: string) => {
-  const baseClasses =
+const getStatusBadge = (status: string) => {
+  const base =
     "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
-
   switch (status.toLowerCase()) {
     case "active":
-      return `${baseClasses} bg-green-100 text-green-800`;
+      return `${base} bg-green-100 text-green-800`;
     case "completed":
-      return `${baseClasses} bg-blue-100 text-blue-800`;
+      return `${base} bg-blue-100 text-blue-800`;
     case "dropped":
-      return `${baseClasses} bg-red-100 text-red-800`;
+      return `${base} bg-red-100 text-red-800`;
     default:
-      return `${baseClasses} bg-gray-100 text-gray-800`;
+      return `${base} bg-gray-100 text-gray-800`;
   }
 };
 
@@ -136,169 +93,43 @@ onMounted(() => {
   loadStudents();
   loadCourses();
 });
+
+const actions = [
+  { label: "View", onClick: viewEnrollment },
+  {
+    label: "Grade",
+    onClick: gradeEnrollment,
+    variant: "primary" as const,
+    show: () => authStore.isTeacher || authStore.isAdmin,
+  },
+  {
+    label: "Delete",
+    onClick: confirmDelete,
+    variant: "danger" as const,
+    show: () => authStore.isAdmin,
+  },
+];
 </script>
 
 <template>
   <AppLayout>
-    <div class="space-y-6">
-      <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-semibold text-gray-900">Enrollments</h1>
-        <Button v-if="authStore.isAdmin" @click="showCreateModal = true">
-          Add Enrollment
-        </Button>
-      </div>
+    <ResourceTable
+      title="Enrollments"
+      :items="enrollments"
+      :columns="enrollmentColumns"
+      :actions="actions"
+      :onCreate="() => (showCreateModal = true)"
+      :canCreate="authStore.isAdmin"
+    />
 
-      <!-- Enrollments Table -->
-      <Card>
-        <Table>
-          <template #header>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Student
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Course
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Enrolled Date
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Status
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Grade
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Actions
-            </th>
-          </template>
+    <CreateEnrollmentModal
+      :show="showCreateModal"
+      :students="students"
+      :courses="courses"
+      @close="showCreateModal = false"
+      @saved="loadEnrollments"
+    />
 
-          <tr v-for="enrollment in enrollments" :key="enrollment.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              <div>
-                <p class="font-medium">
-                  {{ enrollment.student.firstName }}
-                  {{ enrollment.student.lastName }}
-                </p>
-                <p class="text-sm text-gray-500">
-                  {{ enrollment.student.studentId }}
-                </p>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              <div>
-                <p class="font-medium">{{ enrollment.course.courseCode }}</p>
-                <p class="text-sm text-gray-500">
-                  {{ enrollment.course.name }}
-                </p>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ formatDate(enrollment.enrolledAt) }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span :class="getStatusBadgeClass(enrollment.status)">
-                {{ enrollment.status }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              <span v-if="enrollment.grade" class="font-medium text-green-600">
-                {{ enrollment.grade.letterGrade }}
-              </span>
-              <span v-else class="text-gray-400">-</span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              <div class="flex space-x-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  @click="viewEnrollment(enrollment)"
-                >
-                  View
-                </Button>
-                <Button
-                  v-if="authStore.isTeacher || authStore.isAdmin"
-                  variant="success"
-                  size="sm"
-                  @click="gradeEnrollment(enrollment)"
-                >
-                  Grade
-                </Button>
-                <Button
-                  v-if="authStore.isAdmin"
-                  variant="danger"
-                  size="sm"
-                  @click="confirmDelete(enrollment)"
-                >
-                  Delete
-                </Button>
-              </div>
-            </td>
-          </tr>
-        </Table>
-      </Card>
-    </div>
-
-    <!-- Create Modal -->
-    <Modal v-if="showCreateModal" @close="closeCreateModal">
-      <div class="p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">
-          Add New Enrollment
-        </h3>
-
-        <form @submit.prevent="saveEnrollment" class="space-y-4">
-          <div>
-            <label class="form-label">Student</label>
-            <select v-model="form.studentId" required class="form-input">
-              <option value="">Select a student</option>
-              <option
-                v-for="student in students"
-                :key="student.id"
-                :value="student.id"
-              >
-                {{ student.firstName }} {{ student.lastName }} ({{
-                  student.studentId
-                }})
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label class="form-label">Course</label>
-            <select v-model="form.courseId" required class="form-input">
-              <option value="">Select a course</option>
-              <option
-                v-for="course in courses"
-                :key="course.id"
-                :value="course.id"
-              >
-                {{ course.courseCode }} - {{ course.name }}
-              </option>
-            </select>
-          </div>
-
-          <div class="flex justify-end space-x-3 pt-4">
-            <Button variant="secondary" @click="closeCreateModal">
-              Cancel
-            </Button>
-            <Button type="submit"> Create </Button>
-          </div>
-        </form>
-      </div>
-    </Modal>
-
-    <!-- Detail Modal -->
     <DetailModal
       v-if="viewingEnrollment"
       :title="`Enrollment Details`"
@@ -309,9 +140,8 @@ onMounted(() => {
           <label class="block text-sm font-medium text-gray-700">Student</label>
           <p class="mt-1 text-sm text-gray-900">
             {{ viewingEnrollment.student.firstName }}
-            {{ viewingEnrollment.student.lastName }} ({{
-              viewingEnrollment.student.studentId
-            }})
+            {{ viewingEnrollment.student.lastName }}
+            ({{ viewingEnrollment.student.studentId }})
           </p>
         </div>
         <div>
@@ -346,7 +176,6 @@ onMounted(() => {
       </div>
     </DetailModal>
 
-    <!-- Confirmation Modal -->
     <ConfirmationModal
       v-if="enrollmentToDelete"
       title="Delete Enrollment"
