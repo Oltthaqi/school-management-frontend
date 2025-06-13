@@ -16,7 +16,16 @@ const handleLogin = async () => {
   try {
     await authStore.login(form);
     toast.success("Logged in successfully!");
-    router.push("/dashboard");
+
+    const roles = authStore.user?.roles || [];
+
+    if (roles.includes("ROLE_ADMIN") || roles.includes("ROLE_TEACHER")) {
+      router.push("/dashboard");
+    } else if (roles.includes("ROLE_STUDENT")) {
+      router.push("/courses");
+    } else {
+      router.push("/");
+    }
   } catch {
     toast.error(authStore.error || "Login failed. Please try again.");
   }

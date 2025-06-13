@@ -23,7 +23,9 @@ const enrollmentToDelete = ref<Enrollment | null>(null);
 
 const loadEnrollments = async () => {
   try {
-    enrollments.value = await enrollmentService.getAll();
+    enrollments.value = authStore.isStudent
+      ? await enrollmentService.getMine()
+      : await enrollmentService.getAll();
   } catch (error) {
     console.error("Failed to load enrollments:", error);
   }
@@ -90,7 +92,9 @@ const getStatusBadge = (status: string) => {
 
 onMounted(() => {
   loadEnrollments();
-  loadStudents();
+  if (authStore.isAdmin || authStore.isTeacher) {
+    loadStudents();
+  }
   loadCourses();
 });
 
@@ -121,6 +125,12 @@ const actions = [
       :onCreate="() => (showCreateModal = true)"
       :canCreate="authStore.isAdmin"
     />
+    <div
+      v-if="authStore.isStudent && enrollments.length === 0"
+      class="text-center mt-6 text-gray-500 text-sm"
+    >
+      📘 You are not enrolled in any courses yet.
+    </div>
 
     <CreateEnrollmentModal
       :show="showCreateModal"

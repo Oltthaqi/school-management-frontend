@@ -54,6 +54,12 @@ const routes: RouteRecordRaw[] = [
     name: "NotFound",
     component: () => import("../views/NotFoundView.vue"),
   },
+  // {
+  //   path: "/profile",
+  //   name: "Profile",
+  //   component: () => import("../views/ProfileView.vue"),
+  //   meta: { requiresAuth: true },
+  // },
 ];
 
 const router = createRouter({

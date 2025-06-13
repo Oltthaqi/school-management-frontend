@@ -28,4 +28,8 @@ export const enrollmentService = {
   async delete(id: number): Promise<void> {
     await api.delete(`/enrollments/${id}`);
   },
+  async getMine(): Promise<Enrollment[]> {
+    const response = await api.get("/enrollments/me");
+    return response.data;
+  },
 };
